@@ -8,9 +8,9 @@ enum PowerError: Error, CustomStringConvertible {
     var description: String {
         switch self {
         case .adminDenied(let detail):
-            return detail.isEmpty ? "没有获得管理员确认" : detail
+            return detail.isEmpty ? "没有获得管理员确认  Administrator permission was not granted." : detail
         case .unreadable:
-            return "读不到当前睡眠设置"
+            return "读不到当前睡眠设置  Could not read the current sleep setting."
         }
     }
 }

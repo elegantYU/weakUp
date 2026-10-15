@@ -264,7 +264,7 @@ func main() {
 		IconSm:     icon,
 	}
 	pRegisterClass.Call(uintptr(unsafe.Pointer(&class)))
-	title, _ := syscall.UTF16PtrFromString("不许睡")
+	title, _ := syscall.UTF16PtrFromString("不许睡  No Sleep")
 	hwnd, _, _ := pCreateWindow.Call(0, uintptr(unsafe.Pointer(className)), uintptr(unsafe.Pointer(title)), wsOverlapped|wsVisible, 80, 80, 980, 680, 0, 0, instance, 0)
 	mainWindow = hwnd
 	pShowWindow.Call(hwnd, swShow)
@@ -324,26 +324,26 @@ func windowProc(hwnd, message, wparam, lparam uintptr) uintptr {
 
 func buildControls(hwnd uintptr) {
 	uiFont, _, _ = pCreateFont.Call(^uintptr(15), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 0, 0, uintptr(unsafe.Pointer(mustUTF16("Microsoft YaHei UI"))))
-	statusText = child(hwnd, "STATIC", "给我起床好好干活！", wsChild|wsVisible, idStatus)
-	child(hwnd, "STATIC", "全部应用", wsChild|wsVisible, 201)
+	statusText = child(hwnd, "STATIC", "给我起床好好干活！  Get up and get to work!", wsChild|wsVisible, idStatus)
+	child(hwnd, "STATIC", "全部应用  All apps", wsChild|wsVisible, 201)
 	leftList = child(hwnd, "LISTBOX", "", wsChild|wsVisible|wsBorder|wsVScroll|wsTabStop|lbsNotify|0x0100, idLeft)
-	child(hwnd, "STATIC", "不许睡", wsChild|wsVisible, 202)
+	child(hwnd, "STATIC", "不许睡  Keep awake", wsChild|wsVisible, 202)
 	rightList = child(hwnd, "LISTBOX", "", wsChild|wsVisible|wsBorder|wsVScroll|wsTabStop|lbsNotify|0x0100, idRight)
-	child(hwnd, "STATIC", "电池电量下限", wsChild|wsVisible, 203)
+	child(hwnd, "STATIC", "电池电量下限  Battery floor", wsChild|wsVisible, 203)
 	floorEdit = child(hwnd, "EDIT", strconv.Itoa(config.BatteryFloor), wsChild|wsVisible|wsBorder|wsTabStop|esCenter|esNumber, idFloor)
 	child(hwnd, "STATIC", "%", wsChild|wsVisible, 204)
-	lidCheck = child(hwnd, "BUTTON", "放心合盖，小心电量", wsChild|wsVisible|wsTabStop|bsAutoCheck, idLid)
+	lidCheck = child(hwnd, "BUTTON", "放心合盖，小心电量  Mind the lid and the battery", wsChild|wsVisible|wsTabStop|bsAutoCheck, idLid)
 	if config.LidEnabled && machineHasLid {
 		pSendMessage.Call(lidCheck, bmSetCheck, bstChecked, 0)
 	}
-	note := "勾上后，合盖时整台电脑也不睡。点「保存」会要求管理员确认。左边列出当前打开的窗口。"
+	note := "勾上后，合盖时整台电脑也不睡。点「保存」会要求管理员确认。左边列出当前打开的窗口。\nWith this on, closing the lid keeps the computer awake. Save asks for an administrator password. The left list shows windows that are open now."
 	if !machineHasLid {
 		pShowWindow.Call(lidCheck, swHide)
-		note = "左边列出当前打开的窗口。"
+		note = "左边列出当前打开的窗口。\nThe left list shows windows that are open now."
 	}
 	child(hwnd, "STATIC", note, wsChild|wsVisible, 205)
-	resetButton = child(hwnd, "BUTTON", "恢复默认", wsChild|wsVisible|wsTabStop, idReset)
-	saveButton = child(hwnd, "BUTTON", "保存", wsChild|wsVisible|wsTabStop, idSave)
+	resetButton = child(hwnd, "BUTTON", "恢复默认  Reset", wsChild|wsVisible|wsTabStop, idReset)
+	saveButton = child(hwnd, "BUTTON", "保存  Save", wsChild|wsVisible|wsTabStop, idSave)
 	layout(hwnd)
 }
 
@@ -365,9 +365,9 @@ func layout(hwnd uintptr) {
 	width := int(area.Right)
 	height := int(area.Bottom)
 	margin := 16
-	move(statusText, margin, 12, width-margin*2, 36)
-	listTop := 78
-	listHeight := height - 250
+	move(statusText, margin, 12, width-margin*2, 40)
+	listTop := 86
+	listHeight := height - 290
 	if listHeight < 180 {
 		listHeight = 180
 	}
@@ -379,13 +379,13 @@ func layout(hwnd uintptr) {
 	move(findStatic(hwnd, 202), rightX, 52, colWidth, 22)
 	move(rightList, rightX, listTop, colWidth, listHeight)
 	controls := listTop + listHeight + 14
-	move(findStatic(hwnd, 203), rightX, controls, 110, 24)
-	move(floorEdit, rightX+116, controls-2, 48, 24)
-	move(findStatic(hwnd, 204), rightX+170, controls, 24, 24)
+	move(findStatic(hwnd, 203), rightX, controls, 220, 24)
+	move(floorEdit, rightX+228, controls-2, 48, 24)
+	move(findStatic(hwnd, 204), rightX+282, controls, 24, 24)
 	move(lidCheck, rightX, controls+32, colWidth, 24)
-	move(findStatic(hwnd, 205), rightX, controls+60, colWidth, 36)
-	move(resetButton, width-margin-72-8-96, height-margin-34, 96, 32)
-	move(saveButton, width-margin-72, height-margin-34, 72, 32)
+	move(findStatic(hwnd, 205), rightX, controls+60, colWidth, 64)
+	move(resetButton, width-margin-118-8-156, height-margin-34, 156, 32)
+	move(saveButton, width-margin-118, height-margin-34, 118, 32)
 }
 
 func findStatic(hwnd uintptr, id int) uintptr {
@@ -451,7 +451,7 @@ func start() {
 	text := windowText(floorEdit)
 	floor, err := strconv.Atoi(strings.TrimSpace(text))
 	if err != nil || floor < 1 || floor > 90 {
-		alert("电量下限请填 1 到 90 的整数")
+		alert("电量下限请填 1 到 90 的整数\nEnter a whole number from 1 to 90.")
 		return
 	}
 	config.BatteryFloor = floor
@@ -483,7 +483,7 @@ func restoreDefaults() {
 	ac, dc, ok := readLid()
 	if ok && (ac != 1 || dc != 1) {
 		if err := writeLid(1, 1); err != nil {
-			alert("名单已清空。合盖设置没能恢复：" + err.Error())
+			alert("名单已清空。合盖设置没能恢复：" + err.Error() + "\nThe list is cleared. The lid setting was not restored: " + err.Error())
 		}
 	}
 	applyPolicy()
@@ -491,7 +491,7 @@ func restoreDefaults() {
 
 func alert(text string) {
 	body := mustUTF16(text)
-	title := mustUTF16("不许睡")
+	title := mustUTF16("不许睡  No Sleep")
 	pMessageBox.Call(mainWindow, uintptr(unsafe.Pointer(body)), uintptr(unsafe.Pointer(title)), 0)
 	runtime.KeepAlive(body)
 	runtime.KeepAlive(title)
@@ -526,7 +526,7 @@ func refill(list uintptr, items []appItem) {
 	for _, item := range items {
 		label := item.Name
 		if running[strings.ToLower(item.Path)] {
-			label += "    运行中"
+			label += "    运行中  Running"
 		}
 		ptr := mustUTF16(label)
 		pSendMessage.Call(list, lbAddString, 0, uintptr(unsafe.Pointer(ptr)))
@@ -598,7 +598,7 @@ func syncLid(want bool) {
 			config.LidRestore = nil
 			saveConfig()
 			suppressLid = true
-			lidError = "合盖没改成：" + err.Error()
+			lidError = "合盖没改成：" + err.Error() + "\nCould not change lid sleep: " + err.Error()
 		}
 		return
 	}
@@ -611,7 +611,7 @@ func restoreLid() {
 	}
 	prev := *config.LidRestore
 	if err := writeLid(prev.AC, prev.DC); err != nil {
-		lidError = "没能恢复原来的合盖设置：" + err.Error()
+		lidError = "没能恢复原来的合盖设置：" + err.Error() + "\nCould not restore the previous lid setting: " + err.Error()
 		return
 	}
 	config.LidRestore = nil
@@ -661,7 +661,7 @@ func powerIndex(dc bool) (int, error) {
 	}
 	matches := indexPattern.FindAllString(string(out), -1)
 	if len(matches) == 0 {
-		return 0, fmt.Errorf("读不到合盖设置")
+		return 0, fmt.Errorf("读不到合盖设置  Could not read the lid setting")
 	}
 	raw := matches[len(matches)-1]
 	var value int64
@@ -699,7 +699,7 @@ func runElevated(file, params string) error {
 	runtime.KeepAlive(filePtr)
 	runtime.KeepAlive(paramPtr)
 	if ret == 0 {
-		return fmt.Errorf("没有获得管理员确认")
+		return fmt.Errorf("没有获得管理员确认  Administrator permission was not granted")
 	}
 	if info.Process != 0 {
 		pWait.Call(info.Process, 0xFFFFFFFF)
@@ -707,7 +707,7 @@ func runElevated(file, params string) error {
 		pExitCode.Call(info.Process, uintptr(unsafe.Pointer(&code)))
 		pCloseHandle.Call(info.Process)
 		if code != 0 {
-			return fmt.Errorf("powercfg 退出码 %d", code)
+			return fmt.Errorf("powercfg 退出码 %d  powercfg exited with code %d", code, code)
 		}
 	}
 	return nil
@@ -905,7 +905,7 @@ func addTray(hwnd uintptr) {
 		Callback: wmTray,
 		Icon:     icon,
 	}
-	tip, _ := syscall.UTF16FromString("不许睡")
+	tip, _ := syscall.UTF16FromString("不许睡  No Sleep")
 	copy(data.Tip[:], tip)
 	ret, _, _ := pNotifyIcon.Call(nimAdd, uintptr(unsafe.Pointer(&data)))
 	runtime.KeepAlive(tip)
@@ -931,18 +931,18 @@ func onTray(hwnd, lparam uintptr) {
 		return
 	}
 	menu, _, _ := pCreatePopup.Call()
-	appendItem(menu, 10, "打开窗口")
+	appendItem(menu, 10, "打开窗口  Open")
 	if config.Paused {
-		appendItem(menu, 11, "继续不许睡")
+		appendItem(menu, 11, "继续不许睡  Keep awake")
 	} else {
-		appendItem(menu, 11, "先允许睡")
+		appendItem(menu, 11, "先允许睡  Allow sleep")
 	}
 	if config.Manual {
-		appendItem(menu, 12, "可以睡了")
+		appendItem(menu, 12, "可以睡了  Can sleep")
 	} else {
-		appendItem(menu, 12, "现在不许睡")
+		appendItem(menu, 12, "现在不许睡  Stay awake")
 	}
-	appendItem(menu, 13, "退出")
+	appendItem(menu, 13, "退出  Quit")
 	var cursor point
 	pGetCursorPos.Call(uintptr(unsafe.Pointer(&cursor)))
 	pSetForeground.Call(hwnd)

@@ -98,15 +98,15 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
 
     private func buildStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        if let image = NSImage(systemSymbolName: "moon.zzz", accessibilityDescription: "不许睡") {
+        if let image = NSImage(systemSymbolName: "moon.zzz", accessibilityDescription: "不许睡 No Sleep") {
             image.isTemplate = true
             item.button?.image = image
         }
         let menu = NSMenu()
-        let openItem = NSMenuItem(title: "打开窗口", action: #selector(showWindow), keyEquivalent: "")
-        let pause = NSMenuItem(title: "先允许睡", action: #selector(togglePause), keyEquivalent: "")
-        let manual = NSMenuItem(title: "现在不许睡", action: #selector(toggleManual), keyEquivalent: "")
-        let quitItem = NSMenuItem(title: "退出", action: #selector(quit), keyEquivalent: "q")
+        let openItem = NSMenuItem(title: "打开窗口  Open", action: #selector(showWindow), keyEquivalent: "")
+        let pause = NSMenuItem(title: "先允许睡  Allow sleep", action: #selector(togglePause), keyEquivalent: "")
+        let manual = NSMenuItem(title: "现在不许睡  Stay awake", action: #selector(toggleManual), keyEquivalent: "")
+        let quitItem = NSMenuItem(title: "退出  Quit", action: #selector(quit), keyEquivalent: "q")
         for entry in [openItem, pause, manual, quitItem] {
             entry.target = self
         }
@@ -123,12 +123,12 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
 
     private func buildWindow() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 920, height: 560),
+            contentRect: NSRect(x: 0, y: 0, width: 980, height: 620),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
         )
-        window.title = "不许睡"
+        window.title = "不许睡  No Sleep"
         window.delegate = self
         window.isRestorable = false
         window.center()
@@ -136,7 +136,7 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
         let root = NSView()
         window.contentView = root
 
-        let title = label("给我起床好好干活！", size: 15, color: .labelColor)
+        let title = label("给我起床好好干活！\nGet up and get to work!", size: 15, color: .labelColor)
         title.font = .systemFont(ofSize: 15, weight: .medium)
 
         let leftBox = FrameBox()
@@ -146,9 +146,9 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
             root.addSubview($0)
         }
 
-        let leftTitle = label("全部应用", size: 13, color: .labelColor)
+        let leftTitle = label("全部应用  All apps", size: 13, color: .labelColor)
         let search = NSSearchField()
-        search.placeholderString = "搜索"
+        search.placeholderString = "搜索  Search"
         search.translatesAutoresizingMaskIntoConstraints = false
         searchField = search
         NotificationCenter.default.addObserver(
@@ -162,12 +162,12 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
         self.leftTable = leftTable
         let leftScroll = scroll(for: leftTable)
 
-        let rightTitle = label("不许睡", size: 13, color: .labelColor)
+        let rightTitle = label("不许睡  Keep awake", size: 13, color: .labelColor)
         let rightTable = makeTable(onClick: { [weak self] row in self?.removeApp(at: row) })
         self.rightTable = rightTable
         let rightScroll = scroll(for: rightTable)
 
-        let floorLabel = label("电池电量下限", size: 13, color: .labelColor)
+        let floorLabel = label("电池电量下限  Battery floor", size: 13, color: .labelColor)
         let floor = NSTextField(string: "\(store.config.batteryFloor)")
         floor.alignment = .center
         floor.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
@@ -175,21 +175,23 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
         floorField = floor
         let percent = label("%", size: 13, color: .labelColor)
 
-        let lid = NSButton(checkboxWithTitle: "放心合盖，小心电量", target: nil, action: nil)
+        let lid = NSButton(checkboxWithTitle: "放心合盖，小心电量\nMind the lid and the battery", target: nil, action: nil)
+        (lid.cell as? NSButtonCell)?.wraps = true
         lid.state = store.config.lidEnabled ? .on : .off
         lid.translatesAutoresizingMaskIntoConstraints = false
         lid.isHidden = !lidSupported
         lidCheck = lid
         let lidNote = label(
-            lidSupported ? "勾上后，合盖时整台电脑也不睡。点「保存」会要求管理员密码。" : "",
+            lidSupported ? "勾上后，合盖时整台电脑也不睡。点「保存」会要求管理员密码。\nWith this on, closing the lid keeps the computer awake. Save asks for an administrator password." : "",
             size: 11,
             color: .secondaryLabelColor
         )
+        lidNote.maximumNumberOfLines = 4
 
-        let reset = NSButton(title: "恢复默认", target: self, action: #selector(restoreDefaults))
+        let reset = NSButton(title: "恢复默认  Reset", target: self, action: #selector(restoreDefaults))
         reset.bezelStyle = .rounded
         reset.translatesAutoresizingMaskIntoConstraints = false
-        let save = NSButton(title: "保存", target: self, action: #selector(saveAndEnable))
+        let save = NSButton(title: "保存  Save", target: self, action: #selector(saveAndEnable))
         save.bezelStyle = .rounded
         save.keyEquivalent = "\r"
         save.translatesAutoresizingMaskIntoConstraints = false
@@ -244,6 +246,7 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
 
             lid.leadingAnchor.constraint(equalTo: rightBox.leadingAnchor),
             lid.topAnchor.constraint(equalTo: floorLabel.bottomAnchor, constant: 10),
+            lid.heightAnchor.constraint(greaterThanOrEqualToConstant: 36),
             lidNote.leadingAnchor.constraint(equalTo: rightBox.leadingAnchor),
             lidNote.trailingAnchor.constraint(equalTo: rightBox.trailingAnchor),
             lidNote.topAnchor.constraint(equalTo: lid.bottomAnchor, constant: 4),
@@ -251,11 +254,11 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
 
             save.trailingAnchor.constraint(equalTo: rightBox.trailingAnchor),
             save.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -pad),
-            save.widthAnchor.constraint(equalToConstant: 72),
+            save.widthAnchor.constraint(equalToConstant: 118),
             save.heightAnchor.constraint(equalToConstant: 34),
             reset.trailingAnchor.constraint(equalTo: save.leadingAnchor, constant: -8),
             reset.centerYAnchor.constraint(equalTo: save.centerYAnchor),
-            reset.widthAnchor.constraint(equalToConstant: 96),
+            reset.widthAnchor.constraint(equalToConstant: 156),
             reset.heightAnchor.constraint(equalToConstant: 34),
         ])
 
@@ -332,7 +335,7 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
         let cell = (tableView.makeView(withIdentifier: rowIdentifier, owner: self) as? NSTableCellView) ?? makeAppCell()
         cell.textField?.stringValue = app.name
         cell.imageView?.image = icon(for: app.path)
-        (cell.viewWithTag(1) as? NSTextField)?.stringValue = running.contains(app.path) ? "运行中" : ""
+        (cell.viewWithTag(1) as? NSTextField)?.stringValue = running.contains(app.path) ? "运行中  Running" : ""
         return cell
     }
 
@@ -449,7 +452,7 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
     @objc private func saveAndEnable() {
         guard let floor = Int(floorField?.stringValue.trimmingCharacters(in: .whitespaces) ?? ""), (1...90).contains(floor) else {
             let alert = NSAlert()
-            alert.messageText = "电量下限请填 1 到 90 的整数"
+            alert.messageText = "电量下限请填 1 到 90 的整数\nEnter a whole number from 1 to 90."
             alert.runModal()
             return
         }
@@ -509,8 +512,8 @@ final class AppController: NSObject, NSApplicationDelegate, NSTableViewDataSourc
     }
 
     private func applySnapshot(_ snapshot: EngineSnapshot) {
-        pauseItem?.title = store.config.paused ? "继续不许睡" : "先允许睡"
-        manualItem?.title = store.config.manual ? "可以睡了" : "现在不许睡"
+        pauseItem?.title = store.config.paused ? "继续不许睡  Keep awake" : "先允许睡  Allow sleep"
+        manualItem?.title = store.config.manual ? "可以睡了  Can sleep" : "现在不许睡  Stay awake"
         let symbol = snapshot.holding ? "bolt.fill" : "moon.zzz"
         if let image = NSImage(systemSymbolName: symbol, accessibilityDescription: snapshot.status) {
             image.isTemplate = true

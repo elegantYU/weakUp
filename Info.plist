@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key>
-  <string>不许睡</string>
+  <string>不许睡 No Sleep</string>
   <key>CFBundleDisplayName</key>
-  <string>不许睡</string>
+  <string>不许睡 No Sleep</string>
   <key>CFBundleIdentifier</key>
   <string>local.keepawake.desktop</string>
   <key>CFBundleExecutable</key>

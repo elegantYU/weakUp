@@ -71,7 +71,7 @@ final class Engine {
             try commands.setSleepDisabled(0)
             return nil
         } catch {
-            return "名单已清空。休眠设置没能恢复：\(error)"
+            return "名单已清空。休眠设置没能恢复：\(error)\nThe list is cleared. Sleep settings were not restored: \(error)"
         }
     }
 
@@ -93,7 +93,7 @@ final class Engine {
             } catch {
                 store.update { $0.lidRestore = nil }
                 suppressLidRetry = true
-                lidError = "合盖没改成：\(error)"
+                lidError = "合盖没改成：\(error)\nCould not change lid sleep: \(error)"
             }
         } else if store.config.lidRestore?.active == true {
             let previous = store.config.lidRestore?.previous ?? 0
@@ -104,34 +104,34 @@ final class Engine {
                 store.update { $0.lidRestore = nil }
                 lidError = nil
             } catch {
-                lidError = "没能恢复原来的合盖设置：\(error)"
+                lidError = "没能恢复原来的合盖设置：\(error)\nCould not restore the previous lid setting: \(error)"
             }
         }
     }
 
     private func describe(config: Config, battery: BatteryState, hold: Bool, selectedRunning: Bool) -> String {
         if let lidError { return lidError }
-        if config.paused { return "先允许睡" }
+        if config.paused { return "先允许睡  Allow sleep" }
         if battery.onBattery, let percent = battery.percent, percent < config.batteryFloor {
-            return "电池 \(percent)%，低于下限 \(config.batteryFloor)%，可以睡了"
+            return "电池 \(percent)%，低于下限 \(config.batteryFloor)%，可以睡了\nBattery \(percent)% is below \(config.batteryFloor)%. Sleep is allowed."
         }
         if hold && config.manual && !selectedRunning {
-            return powerPrefix(battery) + "现在不许睡"
+            return powerPrefix(battery) + "现在不许睡  Stay awake"
         }
         if hold && selectedRunning {
-            return powerPrefix(battery) + "名单里的应用还在，不许睡"
+            return powerPrefix(battery) + "名单里的应用还在，不许睡  A listed app is running"
         }
         if config.lidEnabled && lidSupported && commands.sleepDisabled() == 1 && config.lidRestore?.active != true {
-            return "可以睡。系统已经不许睡，退出本应用不会改动它"
+            return "可以睡。系统已经不许睡，退出本应用不会改动它\nSleep is allowed. The system was already set to stay awake, and quitting will leave that alone."
         }
-        return "可以睡"
+        return "可以睡  Sleep is allowed"
     }
 
     private func powerPrefix(_ battery: BatteryState) -> String {
         if battery.onBattery, let percent = battery.percent {
-            return "电池 \(percent)% · "
+            return "电池 \(percent)%  Battery · "
         }
-        return "电源 · "
+        return "电源  Power · "
     }
 }
 
